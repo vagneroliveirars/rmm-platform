@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: rmm-platform
+  jackson:
+    deserialization.FAIL_ON_UNKNOWN_PROPERTIES: false
+    deserialization.ADJUST_DATES_TO_CONTEXT_TIME_ZONE: false
+    default-property-inclusion: non_null
+  datasource:
+    url: jdbc:postgresql://localhost:5432/rmm_platform
+    username: user
+    password: password
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: '${spring.datasource.username}'
+      connection-timeout: 6000
+      minimum-idle: 4
+      maximum-pool-size: 32
+      leak-detection-threshold: 6000
+      connection-init-sql: 'SELECT 1'
+  jpa:
+    show_sql: true
+    hibernate:
+      ddl-auto: create
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics,refresh"
+
+logging:
+  level:
+    com.ninjaone.rmmplatform: DEBUG
+    org.springframework: INFO
+
+springdoc:
+  version: '@springdoc.version@'
+  swagger-ui:
+    display-request-duration: true
+    groups-order: ASC
+    operationsSorter: method
+    disable-swagger-default-url: true
+    use-root-path: true
