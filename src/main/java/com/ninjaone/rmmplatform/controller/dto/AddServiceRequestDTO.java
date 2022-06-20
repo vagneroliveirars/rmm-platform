@@ -7,6 +7,13 @@ public class AddServiceRequestDTO {
     @NotNull
     private Long serviceId;
 
+    public AddServiceRequestDTO() {
+    }
+
+    public AddServiceRequestDTO(Long serviceId) {
+        this.serviceId = serviceId;
+    }
+
     public Long getServiceId() {
         return serviceId;
     }

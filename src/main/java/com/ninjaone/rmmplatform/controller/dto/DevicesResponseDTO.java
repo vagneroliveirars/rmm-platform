@@ -5,11 +5,11 @@ import java.util.List;
 
 public class DevicesResponseDTO {
 
+    private List<DeviceResponseDTO> devices;
+
     public DevicesResponseDTO(List<DeviceResponseDTO> devices) {
         this.devices = devices;
     }
-
-    private List<DeviceResponseDTO> devices;
 
     public List<DeviceResponseDTO> getDevices() {
         return devices;

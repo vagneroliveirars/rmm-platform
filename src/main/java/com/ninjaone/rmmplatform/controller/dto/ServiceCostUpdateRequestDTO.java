@@ -10,6 +10,13 @@ public class ServiceCostUpdateRequestDTO {
     @PositiveOrZero
     private BigDecimal amount;
 
+    public ServiceCostUpdateRequestDTO() {
+    }
+
+    public ServiceCostUpdateRequestDTO(BigDecimal amount) {
+        this.amount = amount;
+    }
+
     public BigDecimal getAmount() {
         return amount;
     }

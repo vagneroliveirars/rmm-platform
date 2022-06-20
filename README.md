@@ -10,7 +10,7 @@ This REST API in Java with data persistence fulfills the most basic requirements
 * [Spring Boot](https://spring.io/projects/spring-boot)
 * [PostgreSQL](https://www.postgresql.org)
 
-## Build and running tests
+## Build and tests
 
 Use the gradle wrapper present in the project root.
 
@@ -28,7 +28,7 @@ Use the `docker-compose.yml` file present in the project root to start a Postgre
 docker compose up
 ```
 
-## Starting the Application
+## Starting the application
 
 Run the `Application` class or use the gradle wrapper present in the project root.
 
