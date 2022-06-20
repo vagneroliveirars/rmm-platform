@@ -15,8 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DeviceTypeServiceTest {
@@ -58,6 +57,12 @@ class DeviceTypeServiceTest {
         Long id = deviceType.getId();
         when(deviceTypeRepository.findById(id)).thenReturn(Optional.empty());
         assertThrows(NotFoundException.class, () -> deviceTypeService.findById(id));
+    }
+
+    @Test
+    void deleteById() {
+        deviceTypeService.deleteById(deviceType.getId());
+        verify(deviceTypeRepository).deleteById(deviceType.getId());
     }
 
     @Test

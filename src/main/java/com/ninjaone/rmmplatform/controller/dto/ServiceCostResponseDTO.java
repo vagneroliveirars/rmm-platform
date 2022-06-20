@@ -6,9 +6,9 @@ public class ServiceCostResponseDTO {
 
     private Long id;
 
-    private ServiceResponseDTO service;
+    private Long serviceId;
 
-    private DeviceTypeResponseDTO deviceType;
+    private Long deviceTypeId;
 
     private BigDecimal amount;
 
@@ -20,20 +20,20 @@ public class ServiceCostResponseDTO {
         this.id = id;
     }
 
-    public ServiceResponseDTO getService() {
-        return service;
+    public Long getServiceId() {
+        return serviceId;
     }
 
-    public void setService(ServiceResponseDTO service) {
-        this.service = service;
+    public void setServiceId(Long serviceId) {
+        this.serviceId = serviceId;
     }
 
-    public DeviceTypeResponseDTO getDeviceType() {
-        return deviceType;
+    public Long getDeviceTypeId() {
+        return deviceTypeId;
     }
 
-    public void setDeviceType(DeviceTypeResponseDTO deviceType) {
-        this.deviceType = deviceType;
+    public void setDeviceTypeId(Long deviceTypeId) {
+        this.deviceTypeId = deviceTypeId;
     }
 
     public BigDecimal getAmount() {

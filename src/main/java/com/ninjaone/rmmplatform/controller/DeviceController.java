@@ -64,7 +64,7 @@ public class DeviceController {
 
     @GetMapping("/{id}/services")
     public List<ServiceResponseDTO> getServices(@PathVariable Long id) {
-        return deviceService.getServices(id).stream().map(serviceMapper::toDTO).toList();
+        return deviceService.findById(id).getServices().stream().map(serviceMapper::toDTO).toList();
     }
 
     @PostMapping("/{id}/services")

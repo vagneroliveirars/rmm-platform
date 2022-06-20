@@ -68,10 +68,6 @@ public class DeviceService {
         }
     }
 
-    public Set<Service> getServices(Long id) {
-        return findById(id).getServices();
-    }
-
     public Set<Service> addService(Long id, Long serviceId) {
         Device device = findById(id);
         Service service = serviceService.findById(serviceId);

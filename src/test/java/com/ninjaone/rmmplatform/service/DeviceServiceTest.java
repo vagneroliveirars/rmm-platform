@@ -114,12 +114,6 @@ class DeviceServiceTest {
     }
 
     @Test
-    void getServices() {
-        when(deviceRepository.findById(device.getId())).thenReturn(Optional.of(device));
-        assertEquals(device.getServices(), deviceService.getServices(device.getId()));
-    }
-
-    @Test
     void addService() {
         Long serviceId = 3L;
         ServiceType serviceType = new ServiceType(3L, "Backup");

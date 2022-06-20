@@ -7,6 +7,13 @@ public class DeviceTypeRequestDTO {
     @NotBlank
     private String description;
 
+    public DeviceTypeRequestDTO() {
+    }
+
+    public DeviceTypeRequestDTO(String description) {
+        this.description = description;
+    }
+
     public String getDescription() {
         return description;
     }

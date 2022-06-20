@@ -77,11 +77,11 @@ public class Service {
 
         Service service = (Service) o;
 
-        return new EqualsBuilder().append(id, service.id).append(description, service.description).append(type, service.type).append(costs, service.costs).isEquals();
+        return new EqualsBuilder().append(id, service.id).append(description, service.description).append(type, service.type).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 37).append(id).append(description).append(type).append(costs).toHashCode();
+        return new HashCodeBuilder(17, 37).append(id).append(description).append(type).toHashCode();
     }
 }

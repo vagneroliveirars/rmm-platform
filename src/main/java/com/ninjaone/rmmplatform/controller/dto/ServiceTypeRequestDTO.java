@@ -7,6 +7,13 @@ public class ServiceTypeRequestDTO {
     @NotBlank
     private String description;
 
+    public ServiceTypeRequestDTO() {
+    }
+
+    public ServiceTypeRequestDTO(String description) {
+        this.description = description;
+    }
+
     public String getDescription() {
         return description;
     }

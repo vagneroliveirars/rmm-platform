@@ -11,6 +11,14 @@ public class ServiceRequestDTO {
     @NotNull
     private Long type;
 
+    public ServiceRequestDTO() {
+    }
+
+    public ServiceRequestDTO(String description, Long type) {
+        this.description = description;
+        this.type = type;
+    }
+
     public String getDescription() {
         return description;
     }

@@ -16,6 +16,15 @@ public class ServiceCostRequestDTO {
     @PositiveOrZero
     private BigDecimal amount;
 
+    public ServiceCostRequestDTO() {
+    }
+
+    public ServiceCostRequestDTO(Long serviceId, Long deviceTypeId, BigDecimal amount) {
+        this.serviceId = serviceId;
+        this.deviceTypeId = deviceTypeId;
+        this.amount = amount;
+    }
+
     public Long getServiceId() {
         return serviceId;
     }

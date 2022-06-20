@@ -24,8 +24,8 @@ public class ServiceController {
 
     private final ServiceCostMapper serviceCostMapper;
 
-    public ServiceController(ServiceService service, ServiceMapper serviceMapper, ServiceCostMapper serviceCostMapper) {
-        this.serviceService = service;
+    public ServiceController(ServiceService serviceService, ServiceMapper serviceMapper, ServiceCostMapper serviceCostMapper) {
+        this.serviceService = serviceService;
         this.serviceMapper = serviceMapper;
         this.serviceCostMapper = serviceCostMapper;
     }
