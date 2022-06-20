@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ninjaone.rmmplatform.Application;
 import com.ninjaone.rmmplatform.controller.dto.ServiceCostRequestDTO;
 import com.ninjaone.rmmplatform.controller.dto.ServiceCostUpdateRequestDTO;
+import com.ninjaone.rmmplatform.exception.NotFoundException;
+import com.ninjaone.rmmplatform.exception.ServiceCostAlreadyExistsException;
 import com.ninjaone.rmmplatform.model.DeviceType;
 import com.ninjaone.rmmplatform.model.Service;
 import com.ninjaone.rmmplatform.model.ServiceCost;
@@ -23,6 +25,8 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -44,6 +48,8 @@ class ServiceCostControllerTest {
 
     private ServiceCost serviceCost;
 
+    private ServiceCostRequestDTO serviceCostRequest;
+
     @BeforeEach
     void setUp() {
         ServiceType serviceType = new ServiceType(1L, "Device");
@@ -54,22 +60,98 @@ class ServiceCostControllerTest {
 
         serviceCost = new ServiceCost(service, deviceType, BigDecimal.TEN);
         serviceCost.setId(1L);
+
+        serviceCostRequest = new ServiceCostRequestDTO(serviceCost.getService().getId(), serviceCost.getDeviceType().getId(), serviceCost.getAmount());
     }
 
     @Test
     void create() throws Exception {
-        ServiceCostRequestDTO request = new ServiceCostRequestDTO(serviceCost.getService().getId(), serviceCost.getDeviceType().getId(), serviceCost.getAmount());
-
         when(serviceCostService.save(any())).thenReturn(serviceCost);
 
         mockMvc.perform(post(SERVICE_COSTS_RESOURCE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(serviceCostRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(serviceCost.getId()))
                 .andExpect(jsonPath("$.serviceId").value(serviceCost.getService().getId()))
                 .andExpect(jsonPath("$.deviceTypeId").value(serviceCost.getDeviceType().getId()))
                 .andExpect(jsonPath("$.amount").value(serviceCost.getAmount()));
+    }
+
+    @Test
+    void createWithoutServiceId() throws Exception {
+        serviceCostRequest.setServiceId(null);
+
+        mockMvc.perform(post(SERVICE_COSTS_RESOURCE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(serviceCostRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(SERVICE_COSTS_RESOURCE))
+                .andExpect(jsonPath("$.status").value(BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.error").value(BAD_REQUEST.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void createWithoutDeviceTypeId() throws Exception {
+        serviceCostRequest.setDeviceTypeId(null);
+
+        mockMvc.perform(post(SERVICE_COSTS_RESOURCE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(serviceCostRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(SERVICE_COSTS_RESOURCE))
+                .andExpect(jsonPath("$.status").value(BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.error").value(BAD_REQUEST.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void createWithoutAmount() throws Exception {
+        serviceCostRequest.setAmount(null);
+
+        mockMvc.perform(post(SERVICE_COSTS_RESOURCE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(serviceCostRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(SERVICE_COSTS_RESOURCE))
+                .andExpect(jsonPath("$.status").value(BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.error").value(BAD_REQUEST.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void createNegativeAmount() throws Exception {
+        serviceCostRequest.setAmount(new BigDecimal("-10"));
+
+        mockMvc.perform(post(SERVICE_COSTS_RESOURCE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(serviceCostRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(SERVICE_COSTS_RESOURCE))
+                .andExpect(jsonPath("$.status").value(BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.error").value(BAD_REQUEST.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void serviceCostAlreadyExists() throws Exception {
+        ServiceCostAlreadyExistsException exception = new ServiceCostAlreadyExistsException("Service cost already exists");
+        when(serviceCostService.save(any())).thenThrow(exception);
+
+        mockMvc.perform(post(SERVICE_COSTS_RESOURCE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(serviceCostRequest)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(SERVICE_COSTS_RESOURCE))
+                .andExpect(jsonPath("$.status").value(CONFLICT.value()))
+                .andExpect(jsonPath("$.error").value(CONFLICT.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").value(exception.getMessage()));
     }
 
     @Test
@@ -100,6 +182,22 @@ class ServiceCostControllerTest {
     }
 
     @Test
+    void findByIdNotFound() throws Exception {
+        NotFoundException exception = new NotFoundException("Service cost not found");
+        when(serviceCostService.findById(serviceCost.getId())).thenThrow(exception);
+
+        String path = SERVICE_COSTS_RESOURCE + "/" + serviceCost.getId();
+
+        mockMvc.perform(get(path))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(path))
+                .andExpect(jsonPath("$.status").value(NOT_FOUND.value()))
+                .andExpect(jsonPath("$.error").value(NOT_FOUND.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").value(exception.getMessage()));
+    }
+
+    @Test
     void update() throws Exception {
         ServiceCostUpdateRequestDTO request = new ServiceCostUpdateRequestDTO(serviceCost.getAmount());
 
@@ -107,6 +205,34 @@ class ServiceCostControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void updateWithoutAmount() throws Exception {
+        String path = SERVICE_COSTS_RESOURCE + "/" + serviceCost.getId();
+        mockMvc.perform(put(path)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ServiceCostUpdateRequestDTO())))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(path))
+                .andExpect(jsonPath("$.status").value(BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.error").value(BAD_REQUEST.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void updateWithNegativeAmount() throws Exception {
+        String path = SERVICE_COSTS_RESOURCE + "/" + serviceCost.getId();
+        mockMvc.perform(put(path)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ServiceCostUpdateRequestDTO(new BigDecimal("-10")))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(path))
+                .andExpect(jsonPath("$.status").value(BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.error").value(BAD_REQUEST.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").isNotEmpty());
     }
 
     @Test

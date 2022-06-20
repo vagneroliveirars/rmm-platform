@@ -34,7 +34,8 @@ public class ServiceCostService {
             DeviceType deviceType = deviceTypeService.findById(request.getDeviceTypeId());
             return serviceCostRepository.save(new ServiceCost(service, deviceType, request.getAmount()));
         } catch (DataIntegrityViolationException exception) {
-            throw new ServiceCostAlreadyExistsException(String.format("Service cost with service id %s and device type id %s already exists", request.getServiceId(), request.getDeviceTypeId()));
+            throw new ServiceCostAlreadyExistsException(String.format("Service cost with service id %s and device type id %s already exists",
+                    request.getServiceId(), request.getDeviceTypeId()), exception);
         }
     }
 

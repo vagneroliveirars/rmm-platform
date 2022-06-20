@@ -3,6 +3,8 @@ package com.ninjaone.rmmplatform.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ninjaone.rmmplatform.Application;
 import com.ninjaone.rmmplatform.controller.dto.ServiceRequestDTO;
+import com.ninjaone.rmmplatform.exception.NotFoundException;
+import com.ninjaone.rmmplatform.exception.ServiceAlreadyExistsException;
 import com.ninjaone.rmmplatform.model.DeviceType;
 import com.ninjaone.rmmplatform.model.Service;
 import com.ninjaone.rmmplatform.model.ServiceCost;
@@ -23,6 +25,8 @@ import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -80,6 +84,22 @@ class ServiceControllerTest {
     }
 
     @Test
+    void findByIdNotFound() throws Exception {
+        NotFoundException exception = new NotFoundException("Service not found");
+        when(serviceService.findById(service.getId())).thenThrow(exception);
+
+        String path = SERVICES_RESOURCE + "/" + service.getId();
+
+        mockMvc.perform(get(path))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(path))
+                .andExpect(jsonPath("$.status").value(NOT_FOUND.value()))
+                .andExpect(jsonPath("$.error").value(NOT_FOUND.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").value(exception.getMessage()));
+    }
+
+    @Test
     void create() throws Exception {
         ServiceRequestDTO request = new ServiceRequestDTO(service.getDescription(), service.getType().getId());
 
@@ -93,6 +113,54 @@ class ServiceControllerTest {
                 .andExpect(jsonPath("$.description").value(service.getDescription()))
                 .andExpect(jsonPath("$.type.id").value(service.getType().getId()))
                 .andExpect(jsonPath("$.type.description").value(service.getType().getDescription()));
+    }
+
+    @Test
+    void createWithoutDescription() throws Exception {
+        ServiceRequestDTO request = new ServiceRequestDTO(null, service.getType().getId());
+
+        mockMvc.perform(post(SERVICES_RESOURCE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(SERVICES_RESOURCE))
+                .andExpect(jsonPath("$.status").value(BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.error").value(BAD_REQUEST.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void createWithoutType() throws Exception {
+        ServiceRequestDTO request = new ServiceRequestDTO(service.getDescription(), null);
+
+        mockMvc.perform(post(SERVICES_RESOURCE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(SERVICES_RESOURCE))
+                .andExpect(jsonPath("$.status").value(BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.error").value(BAD_REQUEST.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void serviceAlreadyExists() throws Exception {
+        ServiceRequestDTO request = new ServiceRequestDTO(service.getDescription(), service.getType().getId());
+
+        ServiceAlreadyExistsException exception = new ServiceAlreadyExistsException("Service already exists");
+        when(serviceService.save(any())).thenThrow(exception);
+
+        mockMvc.perform(post(SERVICES_RESOURCE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(SERVICES_RESOURCE))
+                .andExpect(jsonPath("$.status").value(CONFLICT.value()))
+                .andExpect(jsonPath("$.error").value(CONFLICT.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").value(exception.getMessage()));
     }
 
     @Test

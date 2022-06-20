@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ninjaone.rmmplatform.Application;
 import com.ninjaone.rmmplatform.controller.dto.AddServiceRequestDTO;
 import com.ninjaone.rmmplatform.controller.dto.DeviceRequestDTO;
+import com.ninjaone.rmmplatform.exception.DeviceAlreadyExistsException;
+import com.ninjaone.rmmplatform.exception.NotFoundException;
 import com.ninjaone.rmmplatform.model.Device;
 import com.ninjaone.rmmplatform.model.DeviceType;
 import com.ninjaone.rmmplatform.model.Service;
@@ -25,6 +27,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -94,6 +97,22 @@ class DeviceControllerTest {
     }
 
     @Test
+    void findByIdNotFound() throws Exception {
+        NotFoundException exception = new NotFoundException("Device not found");
+        when(deviceService.findById(device.getId())).thenThrow(exception);
+
+        String path = DEVICES_RESOURCE + "/" + device.getId();
+
+        mockMvc.perform(get(path))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(path))
+                .andExpect(jsonPath("$.status").value(NOT_FOUND.value()))
+                .andExpect(jsonPath("$.error").value(NOT_FOUND.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").value(exception.getMessage()));
+    }
+
+    @Test
     void create() throws Exception {
         when(deviceService.save(any())).thenReturn(device);
 
@@ -109,6 +128,67 @@ class DeviceControllerTest {
                 .andExpect(jsonPath("$.type.description").value(device.getType().getDescription()))
                 .andExpect(jsonPath("$.services").isEmpty())
                 .andExpect(jsonPath("$.totalMonthlyCost").value(BigDecimal.ZERO));
+    }
+
+    @Test
+    void createWithoutUUID() throws Exception {
+        deviceRequest.setUuid(null);
+
+        mockMvc.perform(post(DEVICES_RESOURCE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deviceRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(DEVICES_RESOURCE))
+                .andExpect(jsonPath("$.status").value(BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.error").value(BAD_REQUEST.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void createWithoutSystemName() throws Exception {
+        deviceRequest.setSystemName(null);
+
+        mockMvc.perform(post(DEVICES_RESOURCE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deviceRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(DEVICES_RESOURCE))
+                .andExpect(jsonPath("$.status").value(BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.error").value(BAD_REQUEST.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void createWithoutType() throws Exception {
+        deviceRequest.setType(null);
+
+        mockMvc.perform(post(DEVICES_RESOURCE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deviceRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(DEVICES_RESOURCE))
+                .andExpect(jsonPath("$.status").value(BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.error").value(BAD_REQUEST.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void deviceAlreadyExists() throws Exception {
+        DeviceAlreadyExistsException exception = new DeviceAlreadyExistsException("Device already exists");
+        when(deviceService.save(any())).thenThrow(exception);
+
+        mockMvc.perform(post(DEVICES_RESOURCE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deviceRequest)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(DEVICES_RESOURCE))
+                .andExpect(jsonPath("$.status").value(CONFLICT.value()))
+                .andExpect(jsonPath("$.error").value(CONFLICT.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").value(exception.getMessage()));
     }
 
     @Test
@@ -169,8 +249,22 @@ class DeviceControllerTest {
     }
 
     @Test
+    void addServiceWithoutServiceId() throws Exception {
+        String path = DEVICES_RESOURCE + "/" + device.getId() + "/services";
+        mockMvc.perform(post(path)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new AddServiceRequestDTO())))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.path").value(path))
+                .andExpect(jsonPath("$.status").value(BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.error").value(BAD_REQUEST.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
     void removeService() throws Exception {
-        Long serviceId = 1L;
+        long serviceId = 1L;
         mockMvc.perform(delete(DEVICES_RESOURCE + "/" + device.getId() + "/services/" + serviceId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());

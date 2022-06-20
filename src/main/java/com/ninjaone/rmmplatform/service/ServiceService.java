@@ -28,7 +28,7 @@ public class ServiceService {
             Service service = new Service(request.getDescription(), serviceType);
             return serviceRepository.save(service);
         } catch (DataIntegrityViolationException exception) {
-            throw new ServiceAlreadyExistsException(String.format("Service with type %s already exists", request.getType()));
+            throw new ServiceAlreadyExistsException(String.format("Service with type %s already exists", request.getType()), exception);
         }
     }
 
