@@ -9,6 +9,7 @@ This REST API in Java with data persistence fulfills the most basic requirements
 * [Gradle](https://gradle.org)
 * [Spring Boot](https://spring.io/projects/spring-boot)
 * [PostgreSQL](https://www.postgresql.org)
+* [Flyway](https://flywaydb.org)
 
 ## Build and tests
 
@@ -39,7 +40,20 @@ Run the `Application` class or use the gradle wrapper present in the project roo
 Go to:
 * http://localhost:8080/swagger-ui/index.html
 
+## Database
+
+Url, username and password are present in `src/main/resources/application.yml` file.
+
+```yml
+url: jdbc:postgresql://localhost:5432/rmm_platform
+username: user
+password: password
+```
+
+Tables and some test data are created by [Flyway](https://flywaydb.org) during application startup.
+
+Migration files are present in `src/main/resources/db/migration` folder.
+
 ## ER Diagram
 
 ![ER Diagram](src/main/resources/ER-diagram.png)
-

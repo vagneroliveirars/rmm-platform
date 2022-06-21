@@ -20,12 +20,8 @@ spring:
   jpa:
     show_sql: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-    defer-datasource-initialization: true
-  sql:
-    init:
-      mode: always
 
 management:
   endpoint:

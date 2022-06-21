@@ -6,11 +6,11 @@ INSERT INTO device_type (description) VALUES('Linux Workstation');
 INSERT INTO device_type (description) VALUES('Linux Server');
 
 -- device
-INSERT INTO device (uuid, system_name, device_type_id) VALUES('630d2ebe-b948-456d-a7f0-0ec8491cab85', 'Windows 10', 1);
-INSERT INTO device (uuid, system_name, device_type_id) VALUES('b446666b-a114-4090-8a8f-6c00959f805e', 'Windows 11', 2);
-INSERT INTO device (uuid, system_name, device_type_id) VALUES('cba6eb0a-4b13-47cc-bb80-6a50f8395174', 'macOS Monterey', 3);
-INSERT INTO device (uuid, system_name, device_type_id) VALUES('3e7d04fa-6b0c-4b60-a850-6341f6ebf66d', 'macOS Big Sur', 3);
-INSERT INTO device (uuid, system_name, device_type_id) VALUES('a9fd54e0-7811-415a-b93e-92d970d48717', 'macOS Catalina', 3);
+INSERT INTO device (uuid, system_name, type_id) VALUES('630d2ebe-b948-456d-a7f0-0ec8491cab85', 'Windows 10', 1);
+INSERT INTO device (uuid, system_name, type_id) VALUES('b446666b-a114-4090-8a8f-6c00959f805e', 'Windows 11', 2);
+INSERT INTO device (uuid, system_name, type_id) VALUES('cba6eb0a-4b13-47cc-bb80-6a50f8395174', 'macOS Monterey', 3);
+INSERT INTO device (uuid, system_name, type_id) VALUES('3e7d04fa-6b0c-4b60-a850-6341f6ebf66d', 'macOS Big Sur', 3);
+INSERT INTO device (uuid, system_name, type_id) VALUES('a9fd54e0-7811-415a-b93e-92d970d48717', 'macOS Catalina', 3);
 
 -- service_type
 INSERT INTO service_type (description) VALUES('Device');

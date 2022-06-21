@@ -23,7 +23,7 @@ public class Device {
     private String systemName;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "device_type_id")
+    @JoinColumn(name = "type_id")
     private DeviceType type;
 
     @ManyToMany

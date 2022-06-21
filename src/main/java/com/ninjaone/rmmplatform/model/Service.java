@@ -20,6 +20,7 @@ public class Service {
     private String description;
 
     @OneToOne(optional = false)
+    @JoinColumn(name = "type_id")
     private ServiceType type;
 
     @OneToMany(mappedBy = "service")
